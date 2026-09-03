@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "mcautomacebreach",
+  "version": "${version}",
+  "name": "MC Automace Breach",
+  "description": "Minecraft Fabric Mod for Breach Swapping and Macing PVP Techniques",
+  "authors": [
+    "FlappyBURDDD"
+  ],
+  "contact": {
+    "homepage": "https://github.com/FlappyBURDDD/mcautomacebreach"
+  },
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.flappyburdddd.mcautomacebreach.McAutomaceBreachMod"
+    ],
+    "client": [
+      "com.flappyburdddd.mcautomacebreach.client.McAutomaceBreachClient"
+    ]
+  },
+  "mixins": [
+    "mcautomacebreach.mixins.json"
+  ],
+  "accessWidener": "mcautomacebreach.accesswidener",
+  "depends": {
+    "fabricloader": ">=0.14.22",
+    "minecraft": "~1.20.4",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
