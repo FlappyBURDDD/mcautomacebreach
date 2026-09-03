@@ -3,8 +3,9 @@ package com.flappyburdddd.mcautomacebreach.client.util;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.text.Text;
 
 public class InventoryUtil {
     
@@ -23,29 +24,120 @@ public class InventoryUtil {
     }
     
     /**
-     * Checks if item has Breach enchantment (custom enchantment check)
+     * Checks if item has Breach enchantment via NBT tag
      */
     public static boolean hasBreachEnchantment(ItemStack stack) {
-        // In vanilla, we check for custom name or NBT data
-        // For this implementation, we assume "Breach" items have specific enchantments
-        // You can customize this based on your server's Breach Mace definition
-        return stack.hasCustomName() && stack.getCustomName().getString().toLowerCase().contains("breach");
+        if (!stack.hasNbt()) return false;
+        
+        NbtCompound nbt = stack.getNbt();
+        if (nbt == null) return false;
+        
+        // Check custom name for "breach" keyword
+        if (nbt.contains("display")) {
+            NbtCompound display = nbt.getCompound("display");
+            if (display.contains("Name")) {
+                String name = display.getString("Name");
+                // Parse JSON text (Minecraft format)
+                if (name.toLowerCase().contains("breach")) {
+                    return true;
+                }
+            }
+        }
+        
+        // Check enchantments NBT
+        if (nbt.contains("Enchantments")) {
+            NbtList enchantments = nbt.getList("Enchantments", 10); // 10 = compound tag type
+            for (int i = 0; i < enchantments.size(); i++) {
+                NbtCompound enchant = enchantments.getCompound(i);
+                String id = enchant.getString("id");
+                if (id.toLowerCase().contains("breach")) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
     
     /**
-     * Checks if item has Density enchantment
+     * Checks if item has Density enchantment via NBT tag
      */
     public static boolean hasDensityEnchantment(ItemStack stack) {
-        return stack.hasCustomName() && stack.getCustomName().getString().toLowerCase().contains("density");
+        if (!stack.hasNbt()) return false;
+        
+        NbtCompound nbt = stack.getNbt();
+        if (nbt == null) return false;
+        
+        // Check custom name for "density" keyword
+        if (nbt.contains("display")) {
+            NbtCompound display = nbt.getCompound("display");
+            if (display.contains("Name")) {
+                String name = display.getString("Name");
+                if (name.toLowerCase().contains("density")) {
+                    return true;
+                }
+            }
+        }
+        
+        // Check enchantments NBT
+        if (nbt.contains("Enchantments")) {
+            NbtList enchantments = nbt.getList("Enchantments", 10);
+            for (int i = 0; i < enchantments.size(); i++) {
+                NbtCompound enchant = enchantments.getCompound(i);
+                String id = enchant.getString("id");
+                if (id.toLowerCase().contains("density")) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
     
     /**
-     * Gets the enchantment level of Breach enchantment
+     * Gets the Breach enchantment level from NBT
      */
     public static int getBreachLevel(ItemStack stack) {
-        // Custom logic to determine breach level
-        // This can be extended based on server implementation
-        return 1; // Default level
+        if (!stack.hasNbt()) return 0;
+        
+        NbtCompound nbt = stack.getNbt();
+        if (nbt == null) return 0;
+        
+        if (nbt.contains("Enchantments")) {
+            NbtList enchantments = nbt.getList("Enchantments", 10);
+            for (int i = 0; i < enchantments.size(); i++) {
+                NbtCompound enchant = enchantments.getCompound(i);
+                String id = enchant.getString("id");
+                if (id.toLowerCase().contains("breach")) {
+                    return enchant.getShort("lvl");
+                }
+            }
+        }
+        
+        return 0;
+    }
+    
+    /**
+     * Gets the Density enchantment level from NBT
+     */
+    public static int getDensityLevel(ItemStack stack) {
+        if (!stack.hasNbt()) return 0;
+        
+        NbtCompound nbt = stack.getNbt();
+        if (nbt == null) return 0;
+        
+        if (nbt.contains("Enchantments")) {
+            NbtList enchantments = nbt.getList("Enchantments", 10);
+            for (int i = 0; i < enchantments.size(); i++) {
+                NbtCompound enchant = enchantments.getCompound(i);
+                String id = enchant.getString("id");
+                if (id.toLowerCase().contains("density")) {
+                    return enchant.getShort("lvl");
+                }
+            }
+        }
+        
+        return 0;
     }
     
     /**
@@ -81,7 +173,7 @@ public class InventoryUtil {
         for (int i = 0; i < 9; i++) {
             ItemStack stack = inventory.getStack(i);
             if (isDensityMace(stack)) {
-                int level = getBreachLevel(stack);
+                int level = getDensityLevel(stack);
                 if (level > bestLevel) {
                     bestLevel = level;
                     bestSlot = i;
@@ -97,5 +189,12 @@ public class InventoryUtil {
      */
     public static boolean isHoldingSword(ItemStack stack) {
         return stack.getItem().toString().toLowerCase().contains("sword");
+    }
+    
+    /**
+     * Checks if player is holding a shield
+     */
+    public static boolean isHoldingShield(ItemStack stack) {
+        return stack.getItem() == Items.SHIELD;
     }
 }
