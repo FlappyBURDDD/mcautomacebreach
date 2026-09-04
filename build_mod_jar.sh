@@ -6,16 +6,25 @@
 
 set -e
 
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
+
 echo ""
 echo "========================================"
 echo "   McAutomaceBreach - Build Mod JAR"
 echo "========================================"
 echo ""
+echo "Project directory: $SCRIPT_DIR"
+echo ""
 
 # Check if gradle wrapper exists
 if [ ! -f "gradlew" ]; then
-    echo "ERROR: gradlew not found!"
-    echo "This script must be run from the project root directory."
+    echo "ERROR: gradlew not found in $SCRIPT_DIR!"
+    echo ""
+    echo "Make sure you are running this script from the project root directory."
+    echo "Expected: mcautomacebreach/build_mod_jar.sh"
+    echo ""
     read -p "Press Enter to exit..."
     exit 1
 fi
@@ -27,6 +36,7 @@ echo ""
 if ! ./gradlew build; then
     echo ""
     echo "ERROR: Build failed!"
+    echo ""
     read -p "Press Enter to exit..."
     exit 1
 fi
@@ -38,6 +48,7 @@ echo ""
 # Find the JAR file
 if [ ! -f "build/libs/mcautomacebreach-1.0.0.jar" ]; then
     echo "ERROR: JAR file not found at build/libs/mcautomacebreach-1.0.0.jar"
+    echo ""
     read -p "Press Enter to exit..."
     exit 1
 fi
@@ -56,6 +67,7 @@ else
     # Fallback: manual input
     echo "Enter the full path where you want to save the JAR file:"
     echo "(Example: /home/username/Downloads/mcautomacebreach-1.0.0.jar)"
+    echo "(Example: ~/mods/mcautomacebreach-1.0.0.jar)"
     echo ""
     read -p "Save path: " savePath
 fi
@@ -64,8 +76,12 @@ fi
 if [ -z "$savePath" ] || [ "$savePath" = "" ]; then
     echo ""
     echo "Build cancelled."
+    echo ""
     exit 0
 fi
+
+# Expand ~ to home directory
+savePath="${savePath/#\~/$HOME}"
 
 # Ensure .jar extension
 if [[ ! "$savePath" == *.jar ]]; then
@@ -75,6 +91,7 @@ fi
 # Create directory if it doesn't exist
 dir=$(dirname "$savePath")
 if [ ! -d "$dir" ]; then
+    echo "Creating directory: $dir"
     mkdir -p "$dir"
 fi
 
@@ -86,6 +103,7 @@ echo ""
 if ! cp "build/libs/mcautomacebreach-1.0.0.jar" "$savePath"; then
     echo "ERROR: Failed to save JAR file!"
     echo "Make sure you have write permissions to the selected directory."
+    echo ""
     read -p "Press Enter to exit..."
     exit 1
 fi
@@ -98,5 +116,10 @@ echo ""
 echo "Location: $savePath"
 echo ""
 echo "The JAR is ready to be installed in your mods folder."
+echo ""
+echo "Minecraft Mods Folder:"
+echo "  Windows: %APPDATA%\.minecraft\mods\"
+echo "  Linux: ~/.minecraft/mods/"
+echo "  macOS: ~/Library/Application Support/minecraft/mods/"
 echo ""
 read -p "Press Enter to exit..."
